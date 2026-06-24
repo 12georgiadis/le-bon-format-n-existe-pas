@@ -2,7 +2,7 @@
 
 > Markdown, JSON, XML, YAML, lequel est le meilleur pour parler à un LLM ? La question revient sans cesse, et elle est mal posée de la même façon que celle de la langue. Il n'y a pas un format optimal, il y a une relation : qui lit (un humain, le modèle, du code), pour quelle tâche (raisonner, extraire), avec quel modèle. Déplacer le danger, c'est arrêter de chercher un gagnant universel et regarder les deux moments séparément, ce qu'on donne au modèle et ce qu'il rend.
 
-Compagnon de l'essai [La langue n'existe pas (pour un LLM)](https://github.com/12georgiadis/efficience-llm). Même logique, autre échelle. Les chiffres sont sourcés, la qualité des sources est signalée (papier primaire contre estimation de banc d'essai).
+Compagnon de l'essai [La langue n'existe pas (pour un LLM)](https://github.com/12georgiadis/la-langue-n-existe-pas). Même logique, autre échelle.
 
 ## En bref
 
@@ -23,7 +23,7 @@ La bonne question n'est donc pas « quel format », c'est « quel format, pour q
 
 ## 2. Le coût en tokens
 
-Premier axe, le plus mesurable. Pour un même contenu, le classement du plus léger au plus lourd est robuste : **Markdown, puis YAML, puis JSON, puis XML**. Le JSON paie chaque `{`, `}`, `"` et `:` ; le XML paie chaque balise ouvrante et fermante. Les bancs d'essai indépendants donnent des ordres de grandeur cohérents : le XML coûte environ 80 % de tokens de plus que le Markdown pour la même donnée, et un objet rendu en JSON formaté pèse nettement plus que le même en YAML ([improvingagents](https://www.improvingagents.com/blog/best-nested-data-format), [ShShell](https://shshell.com/blog/token-efficiency-module-4-lesson-4-efficient-formatting)). Ces pourcentages précis viennent de billets techniques, pas de papiers évalués : on retient le classement, pas la décimale.
+Premier axe, le plus mesurable. Pour un même contenu, le classement du plus léger au plus lourd est robuste : **Markdown, puis YAML, puis JSON, puis XML**. Le JSON paie chaque `{`, `}`, `"` et `:` ; le XML paie chaque balise ouvrante et fermante. Les bancs d'essai indépendants donnent des ordres de grandeur cohérents : le XML coûte environ 80 % de tokens de plus que le Markdown pour la même donnée, et un objet rendu en JSON formaté pèse nettement plus que le même en YAML ([improvingagents](https://www.improvingagents.com/blog/best-nested-data-format), [ShShell](https://shshell.com/blog/token-efficiency-module-4-lesson-4-efficient-formatting)). On retient le classement, pas la décimale.
 
 Pour des données tabulaires ou uniformes, le CSV est imbattable en taille, et un format émergent, TOON (Token-Oriented Object Notation), sérialise les jeux uniformes avec 30 à 60 % de tokens en moins que le JSON tout en gardant une structure lisible par le modèle ([spec et benchmarks TOON](https://github.com/toon-format/toon)).
 
@@ -31,7 +31,7 @@ Pour des données tabulaires ou uniformes, le CSV est imbattable en taille, et u
 
 À l'entrée, deux objectifs : que le modèle interprète bien, et que ça ne dévore pas le contexte. Pour Claude, la combinaison gagnante n'est pas un format unique, c'est **du Markdown pour le contenu et des balises XML pour la structure**.
 
-Anthropic recommande explicitement les balises XML comme délimiteurs ([documentation prompting](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices)). La raison est mécanique : envelopper un document de 10 000 tokens dans `<document>...</document>` ne coûte que quelques tokens et isole parfaitement ce bloc du reste pour le mécanisme d'attention. Tu écris donc tes instructions et ta prose en Markdown, léger et massivement vu à l'entraînement, et tu bornes tes sections et tes documents avec des balises XML (`<contexte>`, `<exemples>`, `<input>`). Des sources rapportent que la mise en forme XML structurée donne des sorties sensiblement plus régulières que le texte brut. C'est l'un des rares endroits où ajouter quelques tokens (les balises) en fait gagner en fiabilité.
+Anthropic recommande explicitement les balises XML comme délimiteurs ([documentation prompting](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices)). La raison est mécanique : envelopper un document de 10 000 tokens dans `<document>...</document>` ne coûte que quelques tokens et isole parfaitement ce bloc du reste pour le mécanisme d'attention. Tu écris donc tes instructions et ta prose en Markdown, léger et massivement vu à l'entraînement, et tu bornes tes sections et tes documents avec des balises XML (`<contexte>`, `<exemples>`, `<input>`). C'est l'un des rares endroits où ajouter quelques tokens (les balises) en fait gagner en fiabilité.
 
 Pour des données tabulaires injectées en entrée, passer en CSV ou TOON économise directement du contexte sans perte de compréhension.
 
@@ -76,7 +76,3 @@ Pour Claude, la règle tient en une ligne : Markdown plus balises XML en entrée
 - Anthropic, prompting best practices : https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices
 - Which nested data format do LLMs understand best : https://www.improvingagents.com/blog/best-nested-data-format
 - Token-efficient formatting, Markdown vs XML vs JSON : https://shshell.com/blog/token-efficiency-module-4-lesson-4-efficient-formatting
-
----
-
-*Méthode : les pourcentages issus de papiers évalués (2411.10541, 2408.02442, 2603.03306) sont donnés tels quels. Les classements de coût en tokens issus de bancs d'essai non évalués sont présentés comme ordres de grandeur, le classement étant robuste, pas la décimale.*
